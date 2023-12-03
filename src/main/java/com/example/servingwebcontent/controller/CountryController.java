@@ -5,15 +5,16 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.servingwebcontent.entity.CountryEntity;
+import com.example.servingwebcontent.form.CountryForm;
 import com.example.servingwebcontent.form.CountrySearchForm;
 import com.example.servingwebcontent.repository.CountryEntityMapper;
 import com.google.gson.Gson;
@@ -25,8 +26,11 @@ public class CountryController {
 	private CountryEntityMapper mapper;
 
 	@GetMapping("/country")
-	public String init(CountrySearchForm countrySearchForm) {
+	public String init(Model model) {
 
+		model.addAttribute("countrySearchForm",new CountrySearchForm());
+		model.addAttribute("countryForm",new CountryForm());
+		
 		return "country/country";
 	}
 
@@ -52,18 +56,39 @@ public class CountryController {
 
 		return new Gson().toJson(countryEntity.get());
 	}
-
-	/*
-	 * 创建一个方法，监听/country/createCountry，
-	 * 实现根据请求的参数创建一个CountryEntity对象，并将其插入到数据库中。
-	 */
-	@PostMapping("/country/createCountry")
+	
+	@PostMapping("/country/loginCountry")
 	@ResponseBody
-	public String createCountry(@RequestBody CountryEntity countryEntity) {
-		// Method body goes here
-		// For example, you might save the countryEntity to the database
-		// Then return a success message or the saved entity
-		return "Country created successfully";
-	}
+	public String addCustomer(@Validated CountryForm countryForm) {
 
+		CountryEntity countryEntity = new CountryEntity();
+		
+		countryEntity.setMstcountrycd(countryForm.getMstcountrycd());
+		countryEntity.setMstcountrynanme(countryForm.getMstcountrynanme());
+		
+		mapper.insert(countryEntity);
+		
+		return "success";
+	}
+	@PostMapping("/country/updCountry")
+	@ResponseBody
+	public String updCountry(@Validated CountryForm countryForm) {
+
+		CountryEntity countryEntity = new CountryEntity();
+		
+		countryEntity.setMstcountrycd(countryForm.getMstcountrycd());
+		countryEntity.setMstcountrynanme(countryForm.getMstcountrynanme());
+		
+		mapper.updateByPrimaryKey(countryEntity);
+		
+		return "success";
+	}
+	@PostMapping("/country/delCountry")
+	@ResponseBody
+	public String delCountry(@Validated CountryForm countryForm) {
+		
+		mapper.deleteByPrimaryKey(countryForm.getMstcountrycd());
+		
+		return "success";
+	}
 }
